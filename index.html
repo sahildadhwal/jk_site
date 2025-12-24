@@ -108,7 +108,14 @@
             </div>
             <h3 class="scratchers-title">Scratchers</h3>
             <div class="scratchers-grid">
-                <div class="scratcher-chip">$1 Scratchers</div><div class="scratcher-chip">$2 Scratchers</div><div class="scratcher-chip">$3 Scratchers</div><div class="scratcher-chip">$5 Scratchers</div><div class="scratcher-chip">$10 Scratchers</div><div class="scratcher-chip">$20 Scratchers</div><div class="scratcher-chip">$30 Scratchers</div>
+                <div class="scratcher-chip">$1 Scratchers</div>
+                <div class="scratcher-chip">$2 Scratchers</div>
+                <div class="scratcher-chip">$3 Scratchers</div>
+                <div class="scratcher-chip">$5 Scratchers</div>
+                <div class="scratcher-chip">$10 Scratchers</div>
+                <div class="scratcher-chip">$20 Scratchers</div>
+                <div class="scratcher-chip">$30 Scratchers</div>
+                <div class="scratcher-chip">$40 Scratchers</div>
             </div>
         </section>
     </main>
@@ -209,6 +216,11 @@
             const lines = text.split('\n'); if (lines.length < 2) return [];
             const header = parseCSVLine(lines[0]);
             const idx = name => header.findIndex(h => h.toLowerCase() === name.toLowerCase());
+            if (header.includes('cents')) {
+                console.error('Invalid CSV: "cents" column detected. This column should not be present.');
+                return [];
+            }
+
             const upcIdx = idx('upc'), nameIdx = idx('name'), deptIdx = idx('department'), sizeIdx = idx('size');
             if (nameIdx === -1) return [];
             const data = [];
@@ -232,7 +244,8 @@
         }
 
         // Preferred category order (others will appear after, alphabetically)
-        const CATEGORY_ORDER = ['Beer', 'Wine', 'Liquor', 'Drinks', 'Snacks/Food', 'Tobacco', 'Other Items'];
+        const CATEGORY_ORDER = CONFIG.CATEGORY_ORDER;
+
         
         function getDepartments() { 
             const allDepts = [...new Set(products.map(p => p.department))];
@@ -243,6 +256,8 @@
             
             return ['All', ...ordered, ...others, 'Lotto']; 
         }
+
+
         function getDeptCounts() { const counts = { 'All': products.length, 'Lotto': '🎰' }; products.forEach(p => counts[p.department] = (counts[p.department] || 0) + 1); return counts; }
 
         function renderDeptTabs() {
