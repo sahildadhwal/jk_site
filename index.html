@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jolly King - Neighborhood Store Liquor & Food</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coral: #E85A4F;
+            --coral-dark: #D64940;
+            --cream: #FDF8F5;
+            --charcoal: #1A1A1A;
+            --warm-gray: #6B6560;
+            --light-gray: #E8E4E1;
+            --white: #FFFFFF;
+            --shadow-sm: 0 2px 8px rgba(26, 26, 26, 0.06);
+            --shadow-md: 0 4px 20px rgba(26, 26, 26, 0.1);
+            --shadow-lg: 0 8px 40px rgba(26, 26, 26, 0.15);
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, sans-serif;
+            background: var(--cream);
+            color: var(--charcoal);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: var(--white);
+            border-bottom: 1px solid var(--light-gray);
+            padding: 12px 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .logo-mark {
+            font-family: 'Space Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--coral);
+            background: linear-gradient(135deg, var(--coral) 0%, var(--coral-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text {
+            display: none;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--charcoal);
+            line-height: 1.1;
+        }
+
+        .logo-text span {
+            display: block;
+            font-weight: 400;
+            font-size: 11px;
+            color: var(--warm-gray);
+        }
+
+        @media (min-width: 480px) {
+            .logo-text {
+                display: block;
+            }
+        }
+
+        /* Search */
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 2px solid var(--light-gray);
+            border-radius: var(--radius-full);
+            font-family: inherit;
+            font-size: 15px;
+            background: var(--cream);
+            color: var(--charcoal);
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--coral);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(232, 90, 79, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: var(--warm-gray);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--warm-gray);
+            pointer-events: none;
+        }
+
+        /* Location badge */
+        .location-badge {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: var(--cream);
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            color: var(--warm-gray);
+            flex-shrink: 0;
+        }
+
+        .location-badge svg {
+            width: 14px;
+            height: 14px;
+            color: var(--coral);
+        }
+
+        @media (min-width: 640px) {
+            .location-badge {
+                display: flex;
+            }
+        }
+
+        /* Main Content */
+        .main {
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 24px 16px 16px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--charcoal) 0%, var(--warm-gray) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 15px;
+            color: var(--warm-gray);
+        }
+
+        /* Department Tabs */
+        .departments {
+            padding: 0 16px 16px;
+            position: sticky;
+            top: 65px;
+            z-index: 50;
+            background: var(--cream);
+        }
+
+        .dept-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 4px 0;
+            scroll-behavior: smooth;
+        }
+
+        .dept-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .dept-btn {
+            flex-shrink: 0;
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--radius-full);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--white);
+            color: var(--warm-gray);
+            border: 2px solid transparent;
+            white-space: nowrap;
+        }
+
+        .dept-btn:hover {
+            color: var(--charcoal);
+            border-color: var(--light-gray);
+        }
+
+        .dept-btn.active {
+            background: var(--coral);
+            color: var(--white);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dept-btn .count {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 2px 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+        }
+
+        .dept-btn.active .count {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* Products Grid */
+        .products-section {
+            padding: 0 16px 100px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .products-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .products-count {
+            font-size: 14px;
+            color: var(--warm-gray);
+        }
+
+        .products-count strong {
+            color: var(--charcoal);
+            font-weight: 600;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--white);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+        }
+
+        .view-btn {
+            padding: 8px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--warm-gray);
+            transition: all 0.2s ease;
+        }
+
+        .view-btn:hover {
+            color: var(--charcoal);
+        }
+
+        .view-btn.active {
+            background: var(--coral);
+            color: var(--white);
+        }
+
+        .view-btn svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .products-grid.list-view {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        @media (min-width: 480px) {
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* Product Card */
+        .product-card {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-card:active {
+            transform: translateY(-2px);
+        }
+
+        .product-image {
+            aspect-ratio: 1;
+            background: linear-gradient(145deg, #f8f6f4 0%, #eae6e3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.08);
+        }
+
+        .product-image .placeholder-icon {
+            width: 48px;
+            height: 48px;
+            color: var(--light-gray);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 4px 10px;
+            background: var(--coral);
+            color: var(--white);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: var(--radius-full);
+        }
+
+        .product-badge.ebt {
+            background: #2E7D32;
+        }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .product-dept {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--coral);
+            margin-bottom: 4px;
+        }
+
+        .product-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--charcoal);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-size {
+            font-size: 13px;
+            color: var(--warm-gray);
+            margin-top: 4px;
+        }
+
+        /* List View Cards */
+        .products-grid.list-view .product-card {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .products-grid.list-view .product-image {
+            width: 100px;
+            min-width: 100px;
+            aspect-ratio: 1;
+        }
+
+        .products-grid.list-view .product-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .products-grid.list-view .product-name {
+            -webkit-line-clamp: 1;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--warm-gray);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--charcoal);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--light-gray) 25%, #f0ebe8 50%, var(--light-gray) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: var(--radius-sm);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-card .product-image {
+            background: none;
+        }
+
+        .skeleton-card .skeleton-img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .skeleton-card .skeleton-text {
+            height: 14px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-card .skeleton-text:last-child {
+            width: 60%;
+            margin-bottom: 0;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--charcoal);
+            color: var(--white);
+            padding: 32px 16px;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--coral);
+            margin-bottom: 16px;
+        }
+
+        .footer-address {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 8px;
+        }
+
+        .footer-hours {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Scroll to top */
+        .scroll-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            background: var(--coral);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 90;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover {
+            background: var(--coral-dark);
+            transform: translateY(-2px);
+        }
+
+        .scroll-top svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .product-card {
+            animation: fadeInUp 0.4s ease backwards;
+        }
+
+        .product-card:nth-child(1) { animation-delay: 0.02s; }
+        .product-card:nth-child(2) { animation-delay: 0.04s; }
+        .product-card:nth-child(3) { animation-delay: 0.06s; }
+        .product-card:nth-child(4) { animation-delay: 0.08s; }
+        .product-card:nth-child(5) { animation-delay: 0.10s; }
+        .product-card:nth-child(6) { animation-delay: 0.12s; }
+        .product-card:nth-child(7) { animation-delay: 0.14s; }
+        .product-card:nth-child(8) { animation-delay: 0.16s; }
+        .product-card:nth-child(9) { animation-delay: 0.18s; }
+        .product-card:nth-child(10) { animation-delay: 0.20s; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">
+                <span class="logo-mark">JK</span>
+                <div class="logo-text">
+                    Jolly King
+                    <span>Liquor & Food</span>
+                </div>
+            </a>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search products..." id="searchInput">
+                </div>
+            </div>
+
+            <div class="location-badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                730 5th St, Fairfield
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <h1>Welcome to Jolly King</h1>
+            <p>Your neighborhood store for liquor, beer, wine & groceries</p>
+        </section>
+
+        <nav class="departments">
+            <div class="dept-scroll" id="deptTabs">
+                <!-- Populated by JS -->
+            </div>
+        </nav>
+
+        <section class="products-section">
+            <div class="products-header">
+                <p class="products-count">
+                    Showing <strong id="productCount">0</strong> products
+                </p>
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="grid" title="Grid view">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                        </svg>
+                    </button>
+                    <button class="view-btn" data-view="list" title="List view">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="products-grid" id="productsGrid">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-logo">JK</div>
+        <p class="footer-address">730 5th Street, Fairfield, CA 94533</p>
+        <p class="footer-hours">Open Daily • Your Neighborhood Store</p>
+    </footer>
+
+    <button class="scroll-top" id="scrollTop" title="Back to top">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+        </svg>
+    </button>
+
+    <script>
+        // Sample product data - Replace with your actual POS data
+        const products = [
+            { upc: "018200001123", name: "Hennessy VS Cognac", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "080432400432", name: "Crown Royal Canadian Whisky", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "088004017545", name: "Patron Silver Tequila", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "082000001577", name: "Jack Daniel's Tennessee Whiskey", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "087000007277", name: "Jose Cuervo Especial Gold", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "018200002540", name: "Ciroc Vodka", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "080686001126", name: "Grey Goose Vodka", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "018259000102", name: "Bacardi Superior Rum", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "018200004124", name: "Remy Martin VSOP", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "721059001007", name: "1800 Silver Tequila", department: "Liquor", size: "750ml", ebt: false },
+            { upc: "018000610020", name: "Corona Extra", department: "Beer", size: "12pk 12oz", ebt: false },
+            { upc: "017800000000", name: "Modelo Especial", department: "Beer", size: "12pk 12oz", ebt: false },
+            { upc: "018200000010", name: "Bud Light", department: "Beer", size: "18pk 12oz", ebt: false },
+            { upc: "018200000027", name: "Budweiser", department: "Beer", size: "18pk 12oz", ebt: false },
+            { upc: "034100573287", name: "Michelob Ultra", department: "Beer", size: "12pk 12oz", ebt: false },
+            { upc: "071990301071", name: "Heineken", department: "Beer", size: "12pk 12oz", ebt: false },
+            { upc: "018200000034", name: "Coors Light", department: "Beer", size: "18pk 12oz", ebt: false },
+            { upc: "089540001234", name: "Dos Equis Lager", department: "Beer", size: "12pk 12oz", ebt: false },
+            { upc: "085000007654", name: "Barefoot Chardonnay", department: "Wine", size: "750ml", ebt: false },
+            { upc: "085000007661", name: "Barefoot Moscato", department: "Wine", size: "750ml", ebt: false },
+            { upc: "089419000182", name: "Stella Rosa Black", department: "Wine", size: "750ml", ebt: false },
+            { upc: "085000256541", name: "Josh Cellars Cabernet Sauvignon", department: "Wine", size: "750ml", ebt: false },
+            { upc: "085000007678", name: "Apothic Red Blend", department: "Wine", size: "750ml", ebt: false },
+            { upc: "063100100137", name: "Yellow Tail Shiraz", department: "Wine", size: "750ml", ebt: false },
+            { upc: "049000006346", name: "Coca-Cola", department: "Grocery", size: "2 Liter", ebt: true },
+            { upc: "049000028911", name: "Sprite", department: "Grocery", size: "2 Liter", ebt: true },
+            { upc: "012000001536", name: "Pepsi", department: "Grocery", size: "2 Liter", ebt: true },
+            { upc: "049000042566", name: "Fanta Orange", department: "Grocery", size: "2 Liter", ebt: true },
+            { upc: "028400090858", name: "Doritos Nacho Cheese", department: "Snacks", size: "9.25oz", ebt: true },
+            { upc: "028400443753", name: "Cheetos Flamin Hot", department: "Snacks", size: "8.5oz", ebt: true },
+            { upc: "028400034012", name: "Lay's Classic Chips", department: "Snacks", size: "10oz", ebt: true },
+            { upc: "040000505501", name: "Snickers Bar", department: "Snacks", size: "1.86oz", ebt: true },
+            { upc: "040000003809", name: "M&M's Peanut", department: "Snacks", size: "3.27oz", ebt: true },
+            { upc: "034000002405", name: "Reese's Peanut Butter Cups", department: "Snacks", size: "1.5oz", ebt: true },
+            { upc: "038000845703", name: "Red Bull Energy Drink", department: "Grocery", size: "8.4oz", ebt: false },
+            { upc: "070847811169", name: "Monster Energy", department: "Grocery", size: "16oz", ebt: false },
+            { upc: "611269991000", name: "Celsius Energy Drink", department: "Grocery", size: "12oz", ebt: false },
+            { upc: "074780441629", name: "Maruchan Ramen Chicken", department: "Grocery", size: "3oz", ebt: true },
+            { upc: "041789001253", name: "Hot Cheetos Limon", department: "Snacks", size: "8.5oz", ebt: true },
+            { upc: "052000324860", name: "Gatorade Fruit Punch", department: "Grocery", size: "28oz", ebt: true },
+        ];
+
+        // State
+        let currentDept = 'All';
+        let currentView = 'grid';
+        let searchQuery = '';
+        let imageCache = {};
+
+        // DOM Elements
+        const deptTabs = document.getElementById('deptTabs');
+        const productsGrid = document.getElementById('productsGrid');
+        const productCount = document.getElementById('productCount');
+        const searchInput = document.getElementById('searchInput');
+        const scrollTopBtn = document.getElementById('scrollTop');
+        const viewBtns = document.querySelectorAll('.view-btn');
+
+        // Get unique departments
+        function getDepartments() {
+            const depts = [...new Set(products.map(p => p.department))];
+            return ['All', ...depts.sort()];
+        }
+
+        // Get department counts
+        function getDeptCounts() {
+            const counts = { 'All': products.length };
+            products.forEach(p => {
+                counts[p.department] = (counts[p.department] || 0) + 1;
+            });
+            return counts;
+        }
+
+        // Render department tabs
+        function renderDeptTabs() {
+            const depts = getDepartments();
+            const counts = getDeptCounts();
+            
+            deptTabs.innerHTML = depts.map(dept => `
+                <button class="dept-btn ${dept === currentDept ? 'active' : ''}" data-dept="${dept}">
+                    ${dept}
+                    <span class="count">${counts[dept]}</span>
+                </button>
+            `).join('');
+
+            // Add click handlers
+            deptTabs.querySelectorAll('.dept-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentDept = btn.dataset.dept;
+                    renderDeptTabs();
+                    renderProducts();
+                });
+            });
+        }
+
+        // Filter products
+        function getFilteredProducts() {
+            return products.filter(p => {
+                const matchesDept = currentDept === 'All' || p.department === currentDept;
+                const matchesSearch = !searchQuery || 
+                    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    p.department.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesDept && matchesSearch;
+            });
+        }
+
+        // Try to get product image from UPC (using Open Food Facts as fallback)
+        async function getProductImage(upc) {
+            if (imageCache[upc] !== undefined) {
+                return imageCache[upc];
+            }
+
+            try {
+                // Try Open Food Facts API
+                const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${upc}.json`);
+                const data = await response.json();
+                
+                if (data.status === 1 && data.product?.image_url) {
+                    imageCache[upc] = data.product.image_url;
+                    return data.product.image_url;
+                }
+            } catch (e) {
+                console.log('Image fetch failed for:', upc);
+            }
+
+            imageCache[upc] = null;
+            return null;
+        }
+
+        // Create product card HTML
+        function createProductCard(product, index) {
+            const badge = product.ebt ? '<span class="product-badge ebt">EBT</span>' : '';
+            
+            return `
+                <article class="product-card" data-upc="${product.upc}" style="animation-delay: ${index * 0.02}s">
+                    <div class="product-image">
+                        ${badge}
+                        <svg class="placeholder-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                    </div>
+                    <div class="product-info">
+                        <p class="product-dept">${product.department}</p>
+                        <h3 class="product-name">${product.name}</h3>
+                        ${product.size ? `<p class="product-size">${product.size}</p>` : ''}
+                    </div>
+                </article>
+            `;
+        }
+
+        // Render products
+        function renderProducts() {
+            const filtered = getFilteredProducts();
+            productCount.textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                productsGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <h3>No products found</h3>
+                        <p>Try a different search or category</p>
+                    </div>
+                `;
+                return;
+            }
+
+            productsGrid.innerHTML = filtered.map((p, i) => createProductCard(p, i)).join('');
+
+            // Try to load images
+            filtered.forEach(async (product) => {
+                const card = productsGrid.querySelector(`[data-upc="${product.upc}"]`);
+                if (!card) return;
+
+                const imageUrl = await getProductImage(product.upc);
+                if (imageUrl && card) {
+                    const imageContainer = card.querySelector('.product-image');
+                    const placeholder = imageContainer.querySelector('.placeholder-icon');
+                    
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = product.name;
+                    img.loading = 'lazy';
+                    
+                    img.onload = () => {
+                        if (placeholder) placeholder.remove();
+                        imageContainer.appendChild(img);
+                    };
+                }
+            });
+        }
+
+        // Search handler with debounce
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchQuery = e.target.value;
+                renderProducts();
+            }, 200);
+        });
+
+        // View toggle
+        viewBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                viewBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentView = btn.dataset.view;
+                productsGrid.classList.toggle('list-view', currentView === 'list');
+            });
+        });
+
+        // Scroll to top
+        window.addEventListener('scroll', () => {
+            scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+        });
+
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Initialize
+        renderDeptTabs();
+        renderProducts();
+    </script>
+</body>
+</html>
