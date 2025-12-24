@@ -190,6 +190,9 @@
             // Grocery or Snack -> Snacks/Food
             if (d === 'grocery' || d === 'snack' || d === 'snacks' || d === 'food') return 'Snacks/Food';
             
+            // Tobacco or Vape -> Snacks/Vape
+            if (d === 'tobacco' || d === 'vape' || d === 'tobacco' || d === 'vape') return 'Tobacco/Vape';
+            
             // Item Tax -> Other Items
             if (d === 'item tax' || d === 'itemtax') return 'Other Items';
             
@@ -211,7 +214,8 @@
                 if (rawDept.toLowerCase() === 'lotto' || rawDept.toLowerCase() === 'lottery') continue;
                 const dept = mapDepartment(rawDept);
                 const product = { upc: upcIdx !== -1 ? values[upcIdx] || '' : '', name: values[nameIdx] || '', department: dept, size: sizeIdx !== -1 ? values[sizeIdx] || '' : '' };
-                if (product.name) data.push(product);
+                // Only add products with valid names (not null, empty, or whitespace)
+                if (product.name && product.name.trim() !== '') data.push(product);
             }
             return data;
         }
@@ -222,7 +226,17 @@
             result.push(current.trim()); return result;
         }
 
-        function getDepartments() { return ['All', ...[...new Set(products.map(p => p.department))].sort(), 'Lotto']; }
+        // Preferred category order (others will appear after, alphabetically)
+        const CATEGORY_ORDER = CONFIG.CATEGORY_ORDER
+        function getDepartments() { 
+            const allDepts = [...new Set(products.map(p => p.department))];
+            
+            // Split into ordered and unordered
+            const ordered = CATEGORY_ORDER.filter(cat => allDepts.includes(cat));
+            const others = allDepts.filter(cat => !CATEGORY_ORDER.includes(cat)).sort();
+            
+            return ['All', ...ordered, ...others, 'Lotto']; 
+        }
         function getDeptCounts() { const counts = { 'All': products.length, 'Lotto': '🎰' }; products.forEach(p => counts[p.department] = (counts[p.department] || 0) + 1); return counts; }
 
         function renderDeptTabs() {
