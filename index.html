@@ -162,9 +162,6 @@
             </form>
         </div>
     </div></div>
-
-    <!-- Load config file (add config.js to .gitignore) -->
-    <script src="config.js"></script>
     
     <script>
         const CSV_PATH = './products.csv';
@@ -244,7 +241,7 @@
         }
 
         // Preferred category order (others will appear after, alphabetically)
-        const CATEGORY_ORDER = CONFIG.CATEGORY_ORDER;
+        const CATEGORY_ORDER = ['Beer', 'Liquor', 'Wine', 'Drinks', 'Snacks/Food', 'Tobacco/Vape', 'Other Items', 'Lotto'];
 
         
         function getDepartments() { 
@@ -342,17 +339,14 @@
         function closeModal() { suggestModal.classList.remove('open'); document.body.style.overflow = ''; }
 
         // Form submission
+
+        GOOGLE_SCRIPT_URL = ""
         suggestionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Check if config is loaded
-            if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_SCRIPT_URL || CONFIG.GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-                alert('Configuration error. Please contact the store.');
-                console.error('CONFIG.GOOGLE_SCRIPT_URL is not set. Check config.js');
-                return;
-            }
             
             const formData = {
+                token: 'site-v1',
                 productName: $('productName').value,
                 productLink: $('productLink').value,
                 details: $('details').value,
@@ -363,7 +357,7 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
             try {
-                await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+                await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
