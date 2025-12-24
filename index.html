@@ -180,6 +180,11 @@
             }
         }
 
+        // Convert to Title Case (e.g., "LIQUOR" -> "Liquor")
+        function toTitleCase(str) {
+            return str.toLowerCase().replace(/(?:^|\s|\/)\w/g, match => match.toUpperCase());
+        }
+
         // Map raw department names to display categories
         function mapDepartment(dept) {
             const d = dept.toLowerCase().trim();
@@ -192,12 +197,12 @@
             
             // Tobacco or Vape -> Snacks/Vape
             if (d === 'tobacco' || d === 'vape' || d === 'tobacco' || d === 'vape') return 'Tobacco/Vape';
-            
+
             // Item Tax -> Other Items
             if (d === 'item tax' || d === 'itemtax') return 'Other Items';
             
-            // Return original if no mapping
-            return dept;
+            // Return title case if no mapping
+            return toTitleCase(dept);
         }
 
         function parseCSV(text) {
@@ -227,7 +232,8 @@
         }
 
         // Preferred category order (others will appear after, alphabetically)
-        const CATEGORY_ORDER = CONFIG.CATEGORY_ORDER
+        const CATEGORY_ORDER = ['Beer', 'Wine', 'Liquor', 'Drinks', 'Snacks/Food', 'Tobacco', 'Other Items'];
+        
         function getDepartments() { 
             const allDepts = [...new Set(products.map(p => p.department))];
             
