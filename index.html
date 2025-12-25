@@ -85,7 +85,10 @@
     <main class="main">
         <section class="hero"><h1>Welcome to Jolly King</h1><p>Your neighborhood store for liquor, beer, wine & groceries</p></section>
         <section class="services-banner"><div class="services-grid">
-            <a href="https://www.doordash.com/convenience/store/jolly-king-liquor-&-food-fairfield-689439/" target="_blank" class="service-card"><div class="service-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><h3>DoorDash</h3><p>Delivery Available</p></a>
+            <!-- <a href="https://www.doordash.com/convenience/store/jolly-king-liquor-&-food-fairfield-689439/" target="_blank" class="service-card"><div class="service-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><h3>DoorDash</h3><p>Delivery Available</p></a> -->
+            <a href="https://www.doordash.com/convenience/store/jolly-king-liquor-&-food-fairfield-689439/" 
+                    onclick="openDoorDash(event)" target="_blank" class="service-card"><div class="service-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><h3>DoorDash</h3><p>Delivery Available</p></a> 
+
             <a href="https://www.uhaul.com/Locations/Truck-Rentals-near-Fairfield-CA-94533/033221/" target="_blank" class="service-card"><div class="service-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg></div><h3>U-Haul</h3><p>Truck & Trailer Rentals</p></a>
             <a href="https://location.westernunion.com/global-services/find-locations/us/ca/fairfield/6ef6f82cbd20683a48d838c276b8e255?WUCountry=US&WULanguage=en" target="_blank" class="service-card"><div class="service-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><h3>Western Union</h3><p>Money Transfers</p></a>
             <a href="https://www.riamoneytransfer.com" target="_blank" class="service-card"><div class="service-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg></div><h3>RIA</h3><p>Money Transfers</p></a>
@@ -169,6 +172,21 @@
     </div></div>
     
     <script>
+
+        function openDoorDash(e) {
+            e.preventDefault();
+            
+            const appLink = 'doordash://store/689439/?utm_source=partner';
+            const webLink = 'https://www.doordash.com/convenience/store/jolly-king-liquor-&-food-fairfield-689439/';
+            
+            // Try to open the app
+            window.location.href = appLink;
+            
+            // Fallback to web if app doesn't open (after 1.5 seconds)
+            setTimeout(() => {
+                window.location.href = webLink;
+            }, 1500);
+        }
         const CSV_PATH = './products.csv';
 
         let products = [], currentDept = 'All', searchQuery = '';
