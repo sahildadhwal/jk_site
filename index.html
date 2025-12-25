@@ -192,18 +192,38 @@
             return str.toLowerCase().replace(/(?:^|\s|\/)\w/g, match => match.toUpperCase());
         }
 
+        // Convert product name to Title Case, preserving common abbreviations
+        function formatProductName(name) {
+            if (!name) return '';
+            
+            // First convert to title case
+            let formatted = toTitleCase(name);
+            
+            // Keep certain patterns lowercase (oz, ml, pk, ct, etc. when preceded by numbers)
+            formatted = formatted.replace(/(\d+)\s*(Oz|Ml|Pk|Ct|Lt|Mg|G|Lb)\b/gi, (match, num, unit) => `${num}${unit.toLowerCase()}`);
+            
+            // Keep common abbreviations uppercase
+            const upperCaseWords = ['IPA', 'IPL', 'CBD', 'THC', 'XL', 'XXL', 'USA', 'BBQ', 'LED', 'USB', 'TV'];
+            upperCaseWords.forEach(word => {
+                const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                formatted = formatted.replace(regex, word);
+            });
+            
+            return formatted;
+        }
+
         // Map raw department names to display categories
         function mapDepartment(dept) {
             const d = dept.toLowerCase().trim();
-            
+
             // Contains "drink" -> Drinks
             if (d.includes('drink')) return 'Drinks';
             
             // Grocery or Snack -> Snacks/Food
             if (d === 'grocery' || d === 'snack' || d === 'snacks' || d === 'food') return 'Snacks/Food';
             
-            // Tobacco or Vape -> Snacks/Vape
-            if (d === 'tobacco' || d === 'vape' || d === 'tobacco' || d === 'vape') return 'Tobacco/Vape';
+            // Tobacco or Vape -> Tobacco/Vape
+            if (d === 'tobacco' || d === 'vape') return 'Tobacco/Vape';
 
             // Item Tax -> Other Items
             if (d === 'item tax' || d === 'itemtax') return 'Other Items';
@@ -230,9 +250,35 @@
                 const rawDept = deptIdx !== -1 ? values[deptIdx] || 'Other' : 'Other';
                 if (rawDept.toLowerCase() === 'lotto' || rawDept.toLowerCase() === 'lottery') continue;
                 const dept = mapDepartment(rawDept);
-                const product = { upc: upcIdx !== -1 ? values[upcIdx] || '' : '', name: values[nameIdx] || '', department: dept, size: sizeIdx !== -1 ? values[sizeIdx] || '' : '' };
+                const product = { 
+                    upc: upcIdx !== -1 ? values[upcIdx] || '' : '', 
+                    name: formatProductName(values[nameIdx] || ''), 
+                    department: dept, 
+                    size: sizeIdx !== -1 ? values[sizeIdx] || '' : '' 
+                };
+
+                
+                const SKIP_ITEM_NAMES = [
+                    'Bottle Deposit',
+                    'Item Tax',
+                    'CRV',
+                    'Bag Fee',
+                    'Misc',
+                    'Adjustment',
+                    
+                    'Grocery',
+                    'Beer',
+                    'Liquor'
+
+                ];
+
+                const shouldSkip = SKIP_ITEM_NAMES.some(skip =>
+                    product.name.toLowerCase().includes(skip.toLowerCase())
+                );
+
                 // Only add products with valid names (not null, empty, or whitespace)
-                if (product.name && product.name.trim() !== '') data.push(product);
+                if (product.name && product.name.trim() !== '' && !shouldSkip
+) data.push(product);
             }
             return data;
         }
@@ -274,10 +320,48 @@
             });
         }
 
+        // Try multiple free APIs for product images
         async function getProductImage(upc) {
             if (!upc || imageCache[upc] !== undefined) return imageCache[upc] || null;
-            try { const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${upc}.json`); const data = await res.json(); if (data.status === 1 && data.product?.image_url) { imageCache[upc] = data.product.image_url; return data.product.image_url; } } catch (e) {}
-            imageCache[upc] = null; return null;
+            
+            const apis = [
+                // 1. Open Food Facts (best for food/drinks)
+                async () => {
+                    const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${upc}.json`);
+                    const data = await res.json();
+                    if (data.status === 1 && data.product?.image_url) return data.product.image_url;
+                    return null;
+                },
+                // 2. Open Beauty Facts (cosmetics, toiletries)
+                async () => {
+                    const res = await fetch(`https://world.openbeautyfacts.org/api/v0/product/${upc}.json`);
+                    const data = await res.json();
+                    if (data.status === 1 && data.product?.image_url) return data.product.image_url;
+                    return null;
+                },
+                // 3. UPC Item DB (general products - 100 free/day)
+                async () => {
+                    const res = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${upc}`);
+                    const data = await res.json();
+                    if (data.items?.[0]?.images?.[0]) return data.items[0].images[0];
+                    return null;
+                }
+            ];
+            
+            for (const apiFn of apis) {
+                try {
+                    const imageUrl = await apiFn();
+                    if (imageUrl) {
+                        imageCache[upc] = imageUrl;
+                        return imageUrl;
+                    }
+                } catch (e) {
+                    // Continue to next API
+                }
+            }
+            
+            imageCache[upc] = null;
+            return null;
         }
 
         function createProductCard(product, index) {
@@ -290,11 +374,37 @@
             const filtered = getFilteredProducts(); productCount.textContent = filtered.length;
             if (filtered.length === 0) { productsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><h3>No products found</h3><p>Try a different search or category</p></div>'; return; }
             productsGrid.innerHTML = filtered.map((p, i) => createProductCard(p, i)).join('');
-            filtered.slice(0, 20).forEach(async product => {
-                if (!product.upc) return; const card = productsGrid.querySelector(`[data-upc="${product.upc}"]`); if (!card) return;
-                const imageUrl = await getProductImage(product.upc);
-                if (imageUrl) { const container = card.querySelector('.product-image'); const placeholder = container.querySelector('.placeholder-icon'); const img = document.createElement('img'); img.src = imageUrl; img.alt = product.name; img.loading = 'lazy'; img.onload = () => { if (placeholder) placeholder.remove(); container.appendChild(img); }; }
-            });
+            
+            // Load images with delay to avoid rate limits
+            const loadImages = async () => {
+                const productsToLoad = filtered.slice(0, 50);
+                for (let i = 0; i < productsToLoad.length; i++) {
+                    const product = productsToLoad[i];
+                    if (!product.upc) continue;
+                    const card = productsGrid.querySelector(`[data-upc="${product.upc}"]`);
+                    if (!card) continue;
+                    
+                    const imageUrl = await getProductImage(product.upc);
+                    if (imageUrl) {
+                        const container = card.querySelector('.product-image');
+                        const placeholder = container.querySelector('.placeholder-icon');
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = product.name;
+                        img.loading = 'lazy';
+                        img.onload = () => {
+                            if (placeholder) placeholder.remove();
+                            container.appendChild(img);
+                        };
+                    }
+                    
+                    // Small delay between requests
+                    if (i < productsToLoad.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+            };
+            loadImages();
         }
 
         // Random product feature
@@ -342,8 +452,8 @@
         function closeModal() { suggestModal.classList.remove('open'); document.body.style.overflow = ''; }
 
         // Form submission
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuEqbJbry8kgeOZHUqhfZhQIhZHftEkI3u28sNQ3xY_Uy6lalc0gjLZ_fdWRy2x9Sbqg/exec'
 
-        GOOGLE_SCRIPT_URL = ""
         suggestionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
