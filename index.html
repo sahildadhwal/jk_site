@@ -36,7 +36,7 @@
         .products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.products-grid.list-view{grid-template-columns:1fr;gap:8px}@media(min-width:480px){.products-grid{grid-template-columns:repeat(3,1fr)}}@media(min-width:768px){.products-grid{grid-template-columns:repeat(4,1fr);gap:16px}}@media(min-width:1024px){.products-grid{grid-template-columns:repeat(5,1fr)}}
         .product-card{background:var(--white);border-radius:var(--radius-md);overflow:hidden;transition:all 0.25s ease;cursor:pointer;position:relative;animation:fadeInUp 0.4s ease backwards}.product-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
         .product-card.highlighted{ring:4px solid var(--gold);box-shadow:0 0 0 4px var(--gold),var(--shadow-lg);transform:scale(1.02)}
-        .product-image{aspect-ratio:1;background:linear-gradient(145deg,#f8f6f4 0%,#eae6e3 100%);display:flex;align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden}.product-image img{max-width:80%;max-height:80%;object-fit:contain;transition:transform 0.3s ease}.product-card:hover .product-image img{transform:scale(1.08)}.product-image .placeholder-icon{width:48px;height:48px;color:var(--light-gray)}
+        .product-image{aspect-ratio:1;background:linear-gradient(145deg,#f8f6f4 0%,#eae6e3 100%);display:flex;align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden}.product-image img{max-width:80%;max-height:80%;object-fit:contain;transition:transform 0.3s ease}.product-card:hover .product-image img{transform:scale(1.08)}.product-image .placeholder-logo{font-family:'Space Mono',monospace;font-size:32px;font-weight:700;background:linear-gradient(135deg,var(--coral) 0%,var(--coral-dark) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;opacity:0.25}
         .product-info{padding:12px}.product-dept{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--coral);margin-bottom:4px}.product-name{font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.product-size{font-size:13px;color:var(--warm-gray);margin-top:4px}
         .products-grid.list-view .product-card{display:flex;flex-direction:row}.products-grid.list-view .product-image{width:100px;min-width:100px}.products-grid.list-view .product-info{display:flex;flex-direction:column;justify-content:center;flex:1}.products-grid.list-view .product-name{-webkit-line-clamp:1}
         .lotto-section{padding:24px 16px;max-width:1200px;margin:0 auto}.lotto-section.hidden{display:none}.section-title{font-size:22px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}.section-title svg{width:28px;height:28px;color:var(--gold)}
@@ -169,7 +169,7 @@
     <script>
         const CSV_PATH = './products.csv';
 
-        let products = [], currentDept = 'All', searchQuery = '', imageCache = {};
+        let products = [], currentDept = 'All', searchQuery = '';
         const $ = id => document.getElementById(id);
         const deptTabs = $('deptTabs'), productsSection = $('productsSection'), lottoSection = $('lottoSection');
         const productsGrid = $('productsGrid'), productCount = $('productCount'), searchInput = $('searchInput');
@@ -244,6 +244,8 @@
             const upcIdx = idx('upc'), nameIdx = idx('name'), deptIdx = idx('department'), sizeIdx = idx('size');
             if (nameIdx === -1) return [];
             const data = [];
+            const seenNames = new Set();
+
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim(); if (!line) continue;
                 const values = parseCSVLine(line);
@@ -256,7 +258,7 @@
                     department: dept, 
                     size: sizeIdx !== -1 ? values[sizeIdx] || '' : '' 
                 };
-
+            
                 
                 const SKIP_ITEM_NAMES = [
                     'Bottle Deposit',
@@ -268,7 +270,9 @@
                     
                     'Grocery',
                     'Beer',
-                    'Liquor'
+                    'Liquor',
+                    'Zero',
+                    'Z'
 
                 ];
 
@@ -276,11 +280,25 @@
                     product.name.toLowerCase().includes(skip.toLowerCase())
                 );
 
-                // Only add products with valid names (not null, empty, or whitespace)
-                if (product.name && product.name.trim() !== '' && !shouldSkip
-) data.push(product);
+                // // Only add products with valid names (not null, empty, or whitespace)
+                // if (product.name && product.name.trim() !== '' && !shouldSkip
+                //     ) data.push(product);
+
+
+                if (
+                        product.name &&
+                        product.name.trim() !== '' &&
+                        !shouldSkip &&
+                        !seenNames.has(product.name.toLowerCase())
+                    ) {
+                seenNames.add(product.name.toLowerCase());
+                data.push(product);
+                }
+
+                    
             }
             return data;
+
         }
 
         function parseCSVLine(line) {
@@ -320,52 +338,8 @@
             });
         }
 
-        // Try multiple free APIs for product images
-        async function getProductImage(upc) {
-            if (!upc || imageCache[upc] !== undefined) return imageCache[upc] || null;
-            
-            const apis = [
-                // 1. Open Food Facts (best for food/drinks)
-                async () => {
-                    const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${upc}.json`);
-                    const data = await res.json();
-                    if (data.status === 1 && data.product?.image_url) return data.product.image_url;
-                    return null;
-                },
-                // 2. Open Beauty Facts (cosmetics, toiletries)
-                async () => {
-                    const res = await fetch(`https://world.openbeautyfacts.org/api/v0/product/${upc}.json`);
-                    const data = await res.json();
-                    if (data.status === 1 && data.product?.image_url) return data.product.image_url;
-                    return null;
-                },
-                // 3. UPC Item DB (general products - 100 free/day)
-                async () => {
-                    const res = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${upc}`);
-                    const data = await res.json();
-                    if (data.items?.[0]?.images?.[0]) return data.items[0].images[0];
-                    return null;
-                }
-            ];
-            
-            for (const apiFn of apis) {
-                try {
-                    const imageUrl = await apiFn();
-                    if (imageUrl) {
-                        imageCache[upc] = imageUrl;
-                        return imageUrl;
-                    }
-                } catch (e) {
-                    // Continue to next API
-                }
-            }
-            
-            imageCache[upc] = null;
-            return null;
-        }
-
         function createProductCard(product, index) {
-            return `<article class="product-card" data-upc="${product.upc}" data-name="${product.name}" style="animation-delay:${Math.min(index*0.02,0.2)}s"><div class="product-image"><svg class="placeholder-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div><div class="product-info"><p class="product-dept">${product.department}</p><h3 class="product-name">${product.name}</h3>${product.size ? `<p class="product-size">${product.size}</p>` : ''}</div></article>`;
+            return `<article class="product-card" data-upc="${product.upc}" data-name="${product.name}" style="animation-delay:${Math.min(index*0.02,0.2)}s"><div class="product-image"><span class="placeholder-logo">JK</span></div><div class="product-info"><p class="product-dept">${product.department}</p><h3 class="product-name">${product.name}</h3>${product.size ? `<p class="product-size">${product.size}</p>` : ''}</div></article>`;
         }
 
         function renderProducts() {
@@ -374,37 +348,6 @@
             const filtered = getFilteredProducts(); productCount.textContent = filtered.length;
             if (filtered.length === 0) { productsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><h3>No products found</h3><p>Try a different search or category</p></div>'; return; }
             productsGrid.innerHTML = filtered.map((p, i) => createProductCard(p, i)).join('');
-            
-            // Load images with delay to avoid rate limits
-            const loadImages = async () => {
-                const productsToLoad = filtered.slice(0, 50);
-                for (let i = 0; i < productsToLoad.length; i++) {
-                    const product = productsToLoad[i];
-                    if (!product.upc) continue;
-                    const card = productsGrid.querySelector(`[data-upc="${product.upc}"]`);
-                    if (!card) continue;
-                    
-                    const imageUrl = await getProductImage(product.upc);
-                    if (imageUrl) {
-                        const container = card.querySelector('.product-image');
-                        const placeholder = container.querySelector('.placeholder-icon');
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.alt = product.name;
-                        img.loading = 'lazy';
-                        img.onload = () => {
-                            if (placeholder) placeholder.remove();
-                            container.appendChild(img);
-                        };
-                    }
-                    
-                    // Small delay between requests
-                    if (i < productsToLoad.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
-                }
-            };
-            loadImages();
         }
 
         // Random product feature
