@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -223,7 +222,10 @@
         }
         
         const CSV_PATH = './products.csv';
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZo6py9JFn8g3fON19y0VT4zbzoWhnQGIaDxjYudw31AG3SWpd4QBp0wz5K3ivSI1j/exec';
+        // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuEqbJbry8kgeOZHUqhfZhQIhZHftEkI3u28sNQ3xY_Uy6lalc0gjLZ_fdWRy2x9Sbqg/exec';
+        // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZo6py9JFn8g3fON19y0VT4zbzoWhnQGIaDxjYudw31AG3SWpd4QBp0wz5K3ivSI1j/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmyDPXcIVibS2lpb3LmKjWWjTQxjZ9eGgO9F2sYcL21RxyGDEplariN89aaTBnQ5cQ9w/exec';
+        
         
         let BULK_DEALS = [], bulkDealsLoaded = false, products = [], currentDept = 'All', searchQuery = '';
         let rewardsSettings = { expirationDays: 3, pointsPerReward: 3, rewardValue: 1, minSpend: 5 };
@@ -341,7 +343,18 @@
                     html += canRedeem ? '<div class="reward-value">You have <span>$' + rewardDollars + '</span> in rewards!</div>' : '<div class="reward-value" style="opacity:0.8;">' + (rewardsSettings.pointsPerReward - data.points % rewardsSettings.pointsPerReward) + ' more points until $' + rewardsSettings.rewardValue + ' reward</div>';
                     html += '</div>';
                     if (canRedeem) html += '<div class="redeem-section"><button class="redeem-btn" onclick="showRedemptionCode(\'' + phoneLast4 + '\',' + rewardDollars + ')">Redeem $' + rewardDollars + ' Off</button></div>';
-                    if (data.expiringPoints > 0) html += '<div class="expiry-notice"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span><strong>' + data.expiringPoints + ' points</strong> expiring soon! Use them before they\'re gone.</span></div>';
+                    
+                    // Show detailed expiration info
+                    if (data.expirationDetails && data.expirationDetails.length > 0) {
+                        html += '<div class="expiry-notice" style="flex-direction:column;align-items:flex-start;gap:4px;">';
+                        html += '<div style="display:flex;align-items:center;gap:8px;font-weight:600;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Point Expiration:</div>';
+                        data.expirationDetails.forEach(function(item) {
+                            const dayText = item.days === 1 ? 'tomorrow' : 'in ' + item.days + ' days';
+                            html += '<div style="margin-left:26px;">• ' + item.points + ' point' + (item.points > 1 ? 's' : '') + ' expire' + (item.points === 1 ? 's' : '') + ' ' + dayText + '</div>';
+                        });
+                        html += '</div>';
+                    }
+                    
                     html += '<p style="text-align:center;font-size:12px;color:var(--warm-gray);margin-top:16px;">Points expire ' + rewardsSettings.expirationDays + ' days after earning</p>';
                     html += '<button class="submit-btn" onclick="resetBalanceForm()" style="margin-top:12px;background:var(--warm-gray);">Check Another Number</button>';
                     $('balanceResult').innerHTML = html;
