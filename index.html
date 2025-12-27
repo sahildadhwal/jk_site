@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -222,10 +223,8 @@
         }
         
         const CSV_PATH = './products.csv';
-        // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuEqbJbry8kgeOZHUqhfZhQIhZHftEkI3u28sNQ3xY_Uy6lalc0gjLZ_fdWRy2x9Sbqg/exec';
-        // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZo6py9JFn8g3fON19y0VT4zbzoWhnQGIaDxjYudw31AG3SWpd4QBp0wz5K3ivSI1j/exec';
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmyDPXcIVibS2lpb3LmKjWWjTQxjZ9eGgO9F2sYcL21RxyGDEplariN89aaTBnQ5cQ9w/exec';
-        
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6iE1eEnpfP9S8T7bvpMHh32mpXeszQLG4kd6k2vbWb9YBLc1JUEHG1c0brBUkLtNKSg/exec';
+
         
         let BULK_DEALS = [], bulkDealsLoaded = false, products = [], currentDept = 'All', searchQuery = '';
         let rewardsSettings = { expirationDays: 3, pointsPerReward: 3, rewardValue: 1, minSpend: 5 };
@@ -326,6 +325,17 @@
         
         $('balanceForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Rate limiting - max 10 checks per minute
+            const now = Date.now();
+            if (!window.balanceCheckTimes) window.balanceCheckTimes = [];
+            window.balanceCheckTimes = window.balanceCheckTimes.filter(t => now - t < 60000);
+            if (window.balanceCheckTimes.length >= 10) {
+                alert('Too many requests. Please wait a minute and try again.');
+                return;
+            }
+            window.balanceCheckTimes.push(now);
+            
             const phone = $('balancePhone').value;
             $('balanceBtn').disabled = true;
             $('balanceBtn').textContent = 'Loading...';
