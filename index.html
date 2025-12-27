@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -190,10 +189,11 @@
                 <button class="rewards-tab" data-tab="balance">My Balance</button>
             </div>
             <div class="rewards-panel active" id="checkinPanel">
-                <div class="checkin-info">
+                <div class="checkin-info" id="checkinInfo">
                     <p>Earn <strong>1 point</strong> per visit!</p>
                     <p class="min-spend">Minimum $5 purchase required</p>
                     <p style="margin-top:12px;font-size:13px;">3 points = <strong>$1 off</strong> your purchase</p>
+                    <p style="margin-top:8px;font-size:12px;color:var(--coral);">⏰ Points expire after <span id="expirationDays">3</span> days</p>
                 </div>
                 <form id="checkinForm">
                     <div class="form-group"><label for="checkinPhone">Phone Number</label><input type="tel" id="checkinPhone" name="phone" required placeholder="(555) 123-4567" maxlength="14"></div>
@@ -223,12 +223,7 @@
         }
         
         const CSV_PATH = './products.csv';
-        // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuEqbJbry8kgeOZHUqhfZhQIhZHftEkI3u28sNQ3xY_Uy6lalc0gjLZ_fdWRy2x9Sbqg/exec';
-        // Google Script URL - same as before
-        // Form submission
-        // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuEqbJbry8kgeOZHUqhfZhQIhZHftEkI3u28sNQ3xY_Uy6lalc0gjLZ_fdWRy2x9Sbqg/exec'
-        // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGOxYF4tZevTcVKyEdi1SdRqhilCaChqcC0a9SDNcYwFuLO16PbTvPWNoo7qSfkrpW0g/exec'
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBP6QGjpY10n-FANkOBkMxRqhL_5CSeE-FwR5UTInHBryj6PZCUzDs7fkvyJLLpiOdBg/exec'
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZo6py9JFn8g3fON19y0VT4zbzoWhnQGIaDxjYudw31AG3SWpd4QBp0wz5K3ivSI1j/exec';
         
         let BULK_DEALS = [], bulkDealsLoaded = false, products = [], currentDept = 'All', searchQuery = '';
         let rewardsSettings = { expirationDays: 3, pointsPerReward: 3, rewardValue: 1, minSpend: 5 };
@@ -343,11 +338,12 @@
                     const phoneLast4 = getPhoneLast4(phone);
                     
                     let html = '<div class="balance-card"><h3>Your Balance</h3><div class="points">' + data.points + '</div><div class="points-label">points</div>';
-                    html += canRedeem ? '<div class="reward-value">You have <span>$' + rewardDollars + '</span> in rewards!</div>' : '<div class="reward-value" style="opacity:0.8;">' + (rewardsSettings.pointsPerReward - data.points) + ' more points until $1 reward</div>';
+                    html += canRedeem ? '<div class="reward-value">You have <span>$' + rewardDollars + '</span> in rewards!</div>' : '<div class="reward-value" style="opacity:0.8;">' + (rewardsSettings.pointsPerReward - data.points % rewardsSettings.pointsPerReward) + ' more points until $' + rewardsSettings.rewardValue + ' reward</div>';
                     html += '</div>';
                     if (canRedeem) html += '<div class="redeem-section"><button class="redeem-btn" onclick="showRedemptionCode(\'' + phoneLast4 + '\',' + rewardDollars + ')">Redeem $' + rewardDollars + ' Off</button></div>';
-                    if (data.expiringPoints > 0) html += '<div class="expiry-notice"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span><strong>' + data.expiringPoints + ' points</strong> expiring soon!</span></div>';
-                    html += '<button class="submit-btn" onclick="resetBalanceForm()" style="margin-top:20px;background:var(--warm-gray);">Check Another Number</button>';
+                    if (data.expiringPoints > 0) html += '<div class="expiry-notice"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span><strong>' + data.expiringPoints + ' points</strong> expiring soon! Use them before they\'re gone.</span></div>';
+                    html += '<p style="text-align:center;font-size:12px;color:var(--warm-gray);margin-top:16px;">Points expire ' + rewardsSettings.expirationDays + ' days after earning</p>';
+                    html += '<button class="submit-btn" onclick="resetBalanceForm()" style="margin-top:12px;background:var(--warm-gray);">Check Another Number</button>';
                     $('balanceResult').innerHTML = html;
                 } else {
                     $('balanceResult').innerHTML = '<div class="success-message" style="padding:20px;"><svg fill="none" stroke="var(--warm-gray)" viewBox="0 0 24 24" style="width:48px;height:48px;margin-bottom:12px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><h3>No Account Found</h3><p>We don\'t have any points for this number yet. Check in on your next visit to start earning!</p><button class="submit-btn" onclick="resetBalanceForm()" style="margin-top:16px;">Try Another Number</button></div>';
@@ -426,8 +422,26 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?action=getSettings');
                 const data = await response.json();
-                if (data.success) rewardsSettings = { ...rewardsSettings, ...data.settings };
+                if (data.success) {
+                    rewardsSettings = { ...rewardsSettings, ...data.settings };
+                    updateRewardsUI();
+                }
             } catch (error) { console.error('Error loading settings:', error); }
+        }
+        
+        function updateRewardsUI() {
+            // Update expiration days display
+            const expDaysEl = $('expirationDays');
+            if (expDaysEl) expDaysEl.textContent = rewardsSettings.expirationDays;
+            
+            // Update the checkin info box with all dynamic values
+            const checkinInfo = $('checkinInfo');
+            if (checkinInfo) {
+                checkinInfo.innerHTML = '<p>Earn <strong>1 point</strong> per visit!</p>' +
+                    '<p class="min-spend">Minimum $' + rewardsSettings.minSpend + ' purchase required</p>' +
+                    '<p style="margin-top:12px;font-size:13px;">' + rewardsSettings.pointsPerReward + ' points = <strong>$' + rewardsSettings.rewardValue + ' off</strong> your purchase</p>' +
+                    '<p style="margin-top:8px;font-size:12px;color:var(--coral);">⏰ Points expire after ' + rewardsSettings.expirationDays + ' days — use them or lose them!</p>';
+            }
         }
 
         async function loadProducts() {
