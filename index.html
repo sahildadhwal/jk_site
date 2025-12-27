@@ -61,6 +61,9 @@
         .bulk-empty{text-align:center;padding:40px 20px;color:var(--warm-gray);grid-column:1/-1}
         .bulk-empty svg{width:48px;height:48px;margin-bottom:12px;opacity:0.4}
         .bulk-empty h4{font-size:16px;font-weight:600;color:var(--charcoal);margin-bottom:4px}
+        .bulk-loading{text-align:center;padding:40px 20px;grid-column:1/-1}
+        .bulk-loading .loading-spinner{width:36px;height:36px;border:3px solid var(--light-gray);border-top-color:var(--coral);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+        .bulk-loading p{color:var(--warm-gray);font-size:14px}
         
         .empty-state{text-align:center;padding:60px 20px;color:var(--warm-gray)}.empty-state svg{width:64px;height:64px;margin-bottom:16px;opacity:0.4}.empty-state h3{font-size:18px;font-weight:600;color:var(--charcoal);margin-bottom:8px}
         .loading-state{text-align:center;padding:60px 20px}.loading-spinner{width:48px;height:48px;border:4px solid var(--light-gray);border-top-color:var(--coral);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}@keyframes spin{to{transform:rotate(360deg)}}.loading-state p{color:var(--warm-gray)}
@@ -234,15 +237,10 @@
         const CSV_PATH = './products.csv';
 
         // =====================================================
-        // BULK DEALS - Manually add items here
+        // BULK DEALS - Now fetched from Google Sheet "PreOrder" tab
         // =====================================================
-        const BULK_DEALS = [
-            // Example format - uncomment and modify as needed:
-            { name: 'MORE ITEMS TO COME, IF INTERETED CALL', department: 'Other Items', size: '' },
-            { name: 'POM Toilet Paper', department: 'Other Items', size: '45 Rolls' },
-            { name: 'Frozen French Frys', department: 'Other Items', size: '4lbs' },
-            // { name: 'White Claw Variety Pack', department: 'Beer', size: '24 pack' },
-        ];
+        let BULK_DEALS = []; // Will be populated from Google Sheet
+        let bulkDealsLoaded = false;
         // =====================================================
 
         let products = [], currentDept = 'All', searchQuery = '';
@@ -252,6 +250,42 @@
         const scrollTopBtn = $('scrollTop'), suggestModal = $('suggestModal'), suggestionForm = $('suggestionForm');
         const suggestionFormContainer = $('suggestionFormContainer'), submitBtn = $('submitBtn'), randomBtn = $('randomBtn');
         const bulkGrid = $('bulkGrid');
+
+        // Google Script URL - same as before
+        // Form submission
+        // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuEqbJbry8kgeOZHUqhfZhQIhZHftEkI3u28sNQ3xY_Uy6lalc0gjLZ_fdWRy2x9Sbqg/exec'
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGOxYF4tZevTcVKyEdi1SdRqhilCaChqcC0a9SDNcYwFuLO16PbTvPWNoo7qSfkrpW0g/exec'
+
+        // Fetch bulk deals from Google Sheet
+        async function loadBulkDeals() {
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPreOrder`);
+                if (!response.ok) throw new Error('Failed to fetch bulk deals');
+                const data = await response.json();
+                
+                if (data.success && Array.isArray(data.items)) {
+                    BULK_DEALS = data.items.map(item => ({
+                        name: item.name || '',
+                        department: item.department || 'Bulk Deal',
+                        size: item.size || ''
+                    })).filter(item => item.name.trim() !== '');
+                }
+                bulkDealsLoaded = true;
+            } catch (error) {
+                console.error('Error loading bulk deals:', error);
+                // Fallback to empty array if fetch fails
+                BULK_DEALS = [];
+                bulkDealsLoaded = true;
+            }
+            
+            // Re-render department tabs to update count
+            renderDeptTabs();
+            
+            // If currently viewing bulk deals, re-render
+            if (currentDept === 'Bulk Deals') {
+                renderBulkDeals();
+            }
+        }
 
         async function loadProducts() {
             try {
@@ -400,7 +434,8 @@
 
 
         function getDeptCounts() { 
-            const counts = { 'All': products.length, 'Lotto': '🎰', 'Bulk Deals': BULK_DEALS.length > 0 ? BULK_DEALS.length : '📦' }; 
+            const bulkCount = bulkDealsLoaded ? BULK_DEALS.length : '...';
+            const counts = { 'All': products.length, 'Lotto': '🎰', 'Bulk Deals': bulkCount > 0 ? bulkCount : '📦' }; 
             products.forEach(p => counts[p.department] = (counts[p.department] || 0) + 1); 
             return counts; 
         }
@@ -436,7 +471,12 @@
         }
 
         function renderBulkDeals() {
-            if (BULK_DEALS.length === 0) {
+            if (!bulkDealsLoaded) {
+                bulkGrid.innerHTML = `<div class="bulk-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading bulk deals...</p>
+                </div>`;
+            } else if (BULK_DEALS.length === 0) {
                 bulkGrid.innerHTML = `<div class="bulk-empty">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     <h4>Coming Soon!</h4>
@@ -520,8 +560,6 @@
         function closeModal() { suggestModal.classList.remove('open'); document.body.style.overflow = ''; }
 
         // Form submission
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzuEqbJbry8kgeOZHUqhfZhQIhZHftEkI3u28sNQ3xY_Uy6lalc0gjLZ_fdWRy2x9Sbqg/exec'
-
         suggestionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -553,7 +591,9 @@
             }
         });
 
+        // Initialize - load both products and bulk deals
         loadProducts();
+        loadBulkDeals();
     </script>
 </body>
 </html>
