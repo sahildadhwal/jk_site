@@ -1102,7 +1102,7 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <p><strong>Can't find what you're looking for?</strong> We carry way more in-store than what's shown here! Give us a call at <a href="tel:+17074250451">(707) 425-0451</a> or stop by. Some items shown may no longer be available.</p>
+                <p><strong>Can't find what you're looking for?</strong> We carry way more in-store than what's shown here! Give us a call at <a href="tel:+17074250451">(707) 425-0451</a> or stop by.</p>
             </div>
             <div class="products-header">
                 <p class="products-count">Showing <strong id="productCount">0</strong> products</p>
@@ -1366,7 +1366,8 @@
             const SKIP = ['Bottle Deposit', 'Item Tax', 'CRV', 'Bag Fee', 'Misc', 'Adjustment', 'Grocery', 'Beer', 'Liquor', 'Zero', 'Z'];
             
             // Products we no longer carry (add keywords here to hide them)
-            const BLOCKLIST = ['menthol', 'newport', 'kool', 'salem'];  // Add more as needed
+            // const BLOCKLIST = ['menthol', 'newport', 'kool', 'salem'];  // Add more as needed
+            const BLOCKLIST = [];  // Add more as needed
 
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
